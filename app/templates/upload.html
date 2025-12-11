@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% block title %}Upload File - CashCow{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="h2 mb-0">
+            <i class="bi bi-cloud-upload"></i> Upload File
+        </h1>
+        <small class="text-muted">Import bank statements, mutual funds, and investment data</small>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <form id="uploadForm" method="post" enctype="multipart/form-data" action="/upload">
+                    <div class="mb-4">
+                        <label for="fileInput" class="form-label fw-semibold">
+                            <i class="bi bi-file-earmark"></i> Select File
+                        </label>
+                        <div class="file-upload-area border-2 border-dashed rounded-3 p-5 text-center bg-light" id="uploadArea">
+                            <i class="bi bi-cloud-arrow-up fs-1 text-primary mb-3 d-block"></i>
+                            <p class="mb-2"><strong>Click to select or drag and drop</strong></p>
+                            <small class="text-muted">Supported formats: PDF, Excel (.xlsx, .xls), CSV</small>
+                            <p class="text-muted mt-2 mb-0"><small>Max file size: 50 MB</small></p>
+                            <input 
+                                type="file" 
+                                id="fileInput" 
+                                name="file" 
+                                class="d-none" 
+                                accept=".pdf,.xlsx,.xls,.csv"
+                                required
+                            >
+                        </div>
+                        <small class="text-muted d-block mt-2" id="fileName"></small>
+                    </div>
+
+                    <div class="alert alert-info d-none" id="fileInfo" role="alert">
+                        <strong id="fileNameDisplay"></strong>
+                    </div>
+
+                    <div class="d-grid gap-2 d-sm-flex">
+                        <button type="submit" id="submitBtn" class="btn btn-primary btn-lg">
+                            <i class="bi bi-upload"></i> Upload & Process
+                        </button>
+                        <a href="/" class="btn btn-outline-secondary btn-lg">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+
+                <hr class="my-4">
+
+                <div class="alert alert-light border">
+                    <h6 class="mb-2"><i class="bi bi-info-circle"></i> Supported File Types</h6>
+                    <ul class="mb-0 ps-3">
+                        <li><strong>PDF:</strong> Bank statements, investment statements</li>
+                        <li><strong>Excel:</strong> Transaction exports, position reports</li>
+                        <li><strong>CSV:</strong> Comma-separated transaction data</li>
+                    </ul>
+                </div>
+
+                <div class="alert alert-light border">
+                    <h6 class="mb-2"><i class="bi bi-shield-check"></i> Data Privacy</h6>
+                    <p class="mb-0">
+                        All files are processed locally on your machine. No data is sent to external servers. 
+                        Files are stored in the <code>uploads/</code> folder for processing and can be deleted after completion.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const uploadForm = document.getElementById('uploadForm');
+    const uploadArea = document.getElementById('uploadArea');
+    const fileInput = document.getElementById('fileInput');
+    const fileName = document.getElementById('fileName');
+    const fileInfo = document.getElementById('fileInfo');
+    const fileNameDisplay = document.getElementById('fileNameDisplay');
+    const submitBtn = document.getElementById('submitBtn');
+    let isSubmitting = false;
+
+    // Form submission
+    uploadForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        if (!fileInput.files.length) {
+            alert('Please select a file');
+            return;
+        }
+        
+        if (isSubmitting) {
+            return;
+        }
+        
+        isSubmitting = true;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Uploading...';
+        
+        // Submit form
+        uploadForm.submit();
+    });
+
+    // Click to upload
+    uploadArea.addEventListener('click', () => fileInput.click());
+
+    // Drag and drop
+    uploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadArea.classList.add('bg-primary-light', 'border-primary');
+    });
+
+    uploadArea.addEventListener('dragleave', () => {
+        uploadArea.classList.remove('bg-primary-light', 'border-primary');
+    });
+
+    uploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadArea.classList.remove('bg-primary-light', 'border-primary');
+        fileInput.files = e.dataTransfer.files;
+        updateFileName();
+    });
+
+    // File selection change
+    fileInput.addEventListener('change', updateFileName);
+
+    function updateFileName() {
+        if (fileInput.files.length > 0) {
+            const file = fileInput.files[0];
+            const size = (file.size / 1024 / 1024).toFixed(2);
+            
+            // Check file size
+            if (file.size > 50 * 1024 * 1024) {
+                alert('File is too large. Maximum size is 50 MB.');
+                fileInput.value = '';
+                fileInfo.classList.add('d-none');
+                fileName.textContent = '';
+                return;
+            }
+            
+            fileNameDisplay.textContent = `${file.name} (${size} MB)`;
+            fileInfo.classList.remove('d-none');
+            fileName.textContent = `Selected: ${file.name}`;
+        } else {
+            fileInfo.classList.add('d-none');
+            fileName.textContent = '';
+        }
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - CashCow{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="h2 mb-0">
+            <i class="bi bi-speedometer2"></i> Dashboard
+        </h1>
+        <small class="text-muted">Financial Overview</small>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <small class="text-muted d-block">Total Accounts</small>
+                        <h3 class="mb-0">{{ total_accounts }}</h3>
+                    </div>
+                    <i class="bi bi-bank fs-2 text-primary opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <small class="text-muted d-block">Total Transactions</small>
+                        <h3 class="mb-0">{{ total_transactions }}</h3>
+                    </div>
+                    <i class="bi bi-receipt fs-2 text-success opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <small class="text-muted d-block">Institutions</small>
+                        <h3 class="mb-0">{{ total_institutions }}</h3>
+                    </div>
+                    <i class="bi bi-building fs-2 text-info opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <small class="text-muted d-block">Categories</small>
+                        <h3 class="mb-0">{{ total_categories }}</h3>
+                    </div>
+                    <i class="bi bi-tags fs-2 text-warning opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title mb-3">
+                    <i class="bi bi-lightning"></i> Quick Actions
+                </h5>
+                <div class="btn-group" role="group">
+                    <a href="/upload" class="btn btn-primary">
+                        <i class="bi bi-cloud-upload"></i> Upload File
+                    </a>
+                    <a href="/transactions" class="btn btn-outline-primary">
+                        <i class="bi bi-receipt"></i> View Transactions
+                    </a>
+                    <a href="/accounts" class="btn btn-outline-primary">
+                        <i class="bi bi-bank"></i> View Accounts
+                    </a>
+                    <a href="/uploads" class="btn btn-outline-primary">
+                        <i class="bi bi-file-earmark"></i> Upload History
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Recent Uploads -->
+    <div class="col-lg-6 mb-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-bottom">
+                <h5 class="mb-0">
+                    <i class="bi bi-file-earmark-arrow-up"></i> Recent Uploads
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                {% if recent_uploads %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>File</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for upload in recent_uploads %}
+                            <tr>
+                                <td>
+                                    <a href="/upload/{{ upload.id }}" class="text-decoration-none">
+                                        {{ upload.original_filename[:30] }}{% if upload.original_filename|length > 30 %}...{% endif %}
+                                    </a>
+                                </td>
+                                <td>
+                                    <span class="badge {% if upload.status == 'completed' %}bg-success{% elif upload.status == 'failed' %}bg-danger{% elif upload.status == 'processing' %}bg-warning{% else %}bg-info{% endif %}">
+                                        {{ upload.status }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <small class="text-muted">{{ upload.uploaded_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="p-4 text-center text-muted">
+                    <i class="bi bi-inbox fs-2 d-block mb-2"></i>
+                    <small>No uploads yet</small>
+                </div>
+                {% endif %}
+            </div>
+            <div class="card-footer bg-white border-top">
+                <a href="/uploads" class="text-decoration-none">View all uploads →</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Accounts -->
+    <div class="col-lg-6 mb-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-bottom">
+                <h5 class="mb-0">
+                    <i class="bi bi-bank"></i> Active Accounts
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                {% if accounts %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Account</th>
+                                <th>Institution</th>
+                                <th>Type</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for account in accounts %}
+                            <tr>
+                                <td>
+                                    <a href="/transactions?account_id={{ account.id }}" class="text-decoration-none">
+                                        {{ account.account_name }}
+                                    </a>
+                                </td>
+                                <td>
+                                    <small class="text-muted">
+                                        {% if account.institution %}
+                                            {{ account.institution.institution_name }}
+                                        {% endif %}
+                                    </small>
+                                </td>
+                                <td>
+                                    <small>{{ account.account_type }}</small>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="p-4 text-center text-muted">
+                    <i class="bi bi-inbox fs-2 d-block mb-2"></i>
+                    <small>No active accounts</small>
+                </div>
+                {% endif %}
+            </div>
+            <div class="card-footer bg-white border-top">
+                <a href="/accounts" class="text-decoration-none">View all accounts →</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Info -->
+<div class="row">
+    <div class="col-12">
+        <div class="alert alert-light border">
+            <i class="bi bi-info-circle"></i>
+            <strong>Last 30 Days:</strong> {{ recent_transactions_count }} transactions processed
+        </div>
+    </div>
+</div>
+{% endblock %}

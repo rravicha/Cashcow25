@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+
+{% block title %}Upload Status - CashCow{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="h2 mb-0">
+            <i class="bi bi-file-earmark-arrow-up"></i> Upload Status
+        </h1>
+        <small class="text-muted">File processing details</small>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-bottom">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-file-earmark-pdf"></i> {{ job.original_filename }}
+                    </h5>
+                    <span class="badge {% if job.status == 'completed' %}bg-success{% elif job.status == 'failed' %}bg-danger{% elif job.status == 'processing' %}bg-warning text-dark{% else %}bg-info{% endif %}">
+                        {{ job.status|upper }}
+                    </span>
+                </div>
+            </div>
+            <div class="card-body">
+                <!-- Job Details -->
+                <div class="row mb-4">
+                    <div class="col-md-6 mb-3">
+                        <small class="text-muted d-block">Upload Date</small>
+                        <p class="mb-0">{{ job.uploaded_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <small class="text-muted d-block">File Size</small>
+                        <p class="mb-0">{{ (job.file_size / 1024 / 1024)|round(2) }} MB</p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <small class="text-muted d-block">File Type</small>
+                        <p class="mb-0">{{ job.file_type|upper }}</p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <small class="text-muted d-block">Job ID</small>
+                        <p class="mb-0"><code class="small">{{ job.id }}</code></p>
+                    </div>
+                </div>
+
+                <hr>
+
+                <!-- Processing Statistics -->
+                <h6 class="mb-3"><i class="bi bi-graph-up"></i> Processing Statistics</h6>
+                <div class="row mb-4">
+                    <div class="col-md-3 mb-2">
+                        <div class="bg-light p-3 rounded">
+                            <small class="text-muted d-block">Total Rows</small>
+                            <h5 class="mb-0">{{ job.total_rows }}</h5>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <div class="bg-light p-3 rounded">
+                            <small class="text-muted d-block">Parsed</small>
+                            <h5 class="mb-0 text-success">{{ job.parsed_rows }}</h5>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <div class="bg-light p-3 rounded">
+                            <small class="text-muted d-block">Validated</small>
+                            <h5 class="mb-0 text-info">{{ job.validated_rows }}</h5>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <div class="bg-light p-3 rounded">
+                            <small class="text-muted d-block">Processed</small>
+                            <h5 class="mb-0 text-primary">{{ job.processed_rows }}</h5>
+                        </div>
+                    </div>
+                </div>
+
+                {% if job.error_rows > 0 %}
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle"></i> <strong>{{ job.error_rows }}</strong> rows encountered errors during processing
+                </div>
+                {% endif %}
+
+                {% if job.error_message %}
+                <div class="alert alert-danger">
+                    <h6 class="mb-2"><i class="bi bi-exclamation-circle"></i> Error Details</h6>
+                    <p class="mb-0"><code class="small">{{ job.error_message }}</code></p>
+                </div>
+                {% endif %}
+
+                <!-- Timeline -->
+                {% if job.parsing_started_at or job.processing_started_at %}
+                <hr>
+                <h6 class="mb-3"><i class="bi bi-clock-history"></i> Processing Timeline</h6>
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <i class="bi bi-cloud-check text-success"></i>
+                        <div class="ms-3">
+                            <small class="text-muted">Uploaded</small>
+                            <p class="mb-0">{{ job.uploaded_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+                        </div>
+                    </div>
+
+                    {% if job.parsing_started_at %}
+                    <div class="timeline-item">
+                        <i class="bi bi-file-text text-primary"></i>
+                        <div class="ms-3">
+                            <small class="text-muted">Parsing</small>
+                            <p class="mb-0">
+                                {% if job.parsing_completed_at %}
+                                    Completed: {{ job.parsing_completed_at.strftime('%Y-%m-%d %H:%M:%S') }}
+                                {% else %}
+                                    Started: {{ job.parsing_started_at.strftime('%Y-%m-%d %H:%M:%S') }}
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if job.processing_started_at %}
+                    <div class="timeline-item">
+                        <i class="bi bi-gear text-info"></i>
+                        <div class="ms-3">
+                            <small class="text-muted">Processing</small>
+                            <p class="mb-0">
+                                {% if job.processing_completed_at %}
+                                    Completed: {{ job.processing_completed_at.strftime('%Y-%m-%d %H:%M:%S') }}
+                                {% else %}
+                                    Started: {{ job.processing_started_at.strftime('%Y-%m-%d %H:%M:%S') }}
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+            </div>
+            <div class="card-footer bg-white border-top">
+                <div class="d-flex gap-2">
+                    <a href="/uploads" class="btn btn-outline-secondary">
+                        <i class="bi bi-list"></i> Upload History
+                    </a>
+                    <a href="/" class="btn btn-outline-secondary">
+                        <i class="bi bi-house"></i> Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Auto-refresh status if still processing
+document.addEventListener('DOMContentLoaded', function() {
+    const status = '{{ job.status }}';
+    if (status !== 'completed' && status !== 'failed') {
+        // Refresh page every 3 seconds while processing
+        setTimeout(() => location.reload(), 3000);
+    }
+});
+</script>
+{% endblock %}

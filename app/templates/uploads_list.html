@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block title %}Upload History - CashCow{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="h2 mb-0">
+            <i class="bi bi-file-earmark"></i> Upload History
+        </h1>
+        <small class="text-muted">All uploaded files and their processing status</small>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">All Uploads</h5>
+                <a href="/upload" class="btn btn-sm btn-primary">
+                    <i class="bi bi-plus-circle"></i> New Upload
+                </a>
+            </div>
+            
+            {% if uploads %}
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>File Name</th>
+                            <th>Type</th>
+                            <th>Size</th>
+                            <th>Status</th>
+                            <th>Uploaded</th>
+                            <th>Statistics</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for upload in uploads %}
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-file-earmark text-muted me-2"></i>
+                                    <div>
+                                        <a href="/upload/{{ upload.id }}" class="text-decoration-none fw-500">
+                                            {{ upload.original_filename[:40] }}{% if upload.original_filename|length > 40 %}...{% endif %}
+                                        </a>
+                                        <small class="text-muted d-block">ID: {{ upload.id }}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <code class="small bg-light px-2 py-1 rounded">{{ upload.file_type|upper }}</code>
+                            </td>
+                            <td>
+                                <small>{{ (upload.file_size / 1024 / 1024)|round(2) }} MB</small>
+                            </td>
+                            <td>
+                                <span class="badge {% if upload.status == 'completed' %}bg-success{% elif upload.status == 'failed' %}bg-danger{% elif upload.status == 'processing' or upload.status == 'parsing' or upload.status == 'validating' %}bg-warning text-dark{% else %}bg-info{% endif %}">
+                                    {{ upload.status }}
+                                </span>
+                            </td>
+                            <td>
+                                <small class="text-muted">{{ upload.uploaded_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                            </td>
+                            <td>
+                                <small class="text-muted">
+                                    P: {{ upload.parsed_rows }} | 
+                                    V: {{ upload.validated_rows }} | 
+                                    C: {{ upload.processed_rows }}
+                                </small>
+                            </td>
+                            <td>
+                                <a href="/upload/{{ upload.id }}" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-eye"></i> View
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="card-footer bg-white border-top">
+                <small class="text-muted">
+                    <i class="bi bi-info-circle"></i> 
+                    Legend: P = Parsed, V = Validated, C = Committed
+                </small>
+            </div>
+            {% else %}
+            <div class="card-body text-center py-5">
+                <i class="bi bi-inbox fs-1 text-muted d-block mb-3"></i>
+                <p class="text-muted mb-0">No uploads yet</p>
+                <a href="/upload" class="btn btn-primary mt-3">
+                    <i class="bi bi-cloud-upload"></i> Upload Your First File
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% endblock %}
